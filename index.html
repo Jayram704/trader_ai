@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Portfolio Trader - AI-Powered Portfolio Management</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@2.0.0/dist/chartjs-plugin-streaming.min.js"></script>
+    
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>RL Portfolio Trader</span>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container main-container">
+        
+        <!-- Control Panel -->
+        <div class="panel glass-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-sliders-h"></i> Training Configuration</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Assets</label>
+                        <select id="assetSelect" multiple class="multiselect">
+                            <option value="AAPL" selected>Apple</option>
+                            <option value="MSFT" selected>Microsoft</option>
+                            <option value="GOOGL" selected>Google</option>
+                            <option value="AMZN" selected>Amazon</option>
+                            <option value="JPM">JPMorgan</option>
+                            <option value="BAC">Bank of America</option>
+                            <option value="JNJ">Johnson & Johnson</option>
+                            <option value="PG">Procter & Gamble</option>
+                            <option value="BTC-USD">Bitcoin</option>
+                            <option value="ETH-USD">Ethereum</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Training Episodes</label>
+                        <input type="number" id="episodes" value="100" min="10" max="500">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="startDate" value="2020-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="endDate" value="2023-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Initial Balance</label>
+                        <input type="number" id="initialBalance" value="100000" step="1000">
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="startTraining" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Training
+                    </button>
+                    <button id="stopTraining" class="btn btn-secondary" disabled>
+                        <i class="fas fa-stop"></i> Stop Training
+                    </button>
+                    <button id="runBacktest" class="btn btn-accent">
+                        <i class="fas fa-chart-bar"></i> Run Backtest
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Progress -->
+        <div class="panel glass-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-tasks"></i> Training Progress</h2>
+            </div>
+            <div class="panel-body">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Ready to start</div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="currentEpisode">0</div>
+                            <div class="stat-label">Episode</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="sharpeRatio">--</div>
+                            <div class="stat-label">Sharpe Ratio</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-trend-down"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="maxDrawdown">--</div>
+                            <div class="stat-label">Max Drawdown</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="portfolioValue">$100,000</div>
+                            <div class="stat-label">Portfolio Value</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- Real-time Reward Chart -->
+            <div class="panel glass-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-area"></i> Episode Rewards</h3>
+                </div>
+                <div class="panel-body">
+                    <canvas id="rewardChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Sharpe Ratio Chart -->
+            <div class="panel glass-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-line"></i> Sharpe Ratio Evolution</h3>
+                </div>
+                <div class="panel-body">
+                    <canvas id="sharpeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Allocation -->
+        <div class="panel glass-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-pie-chart"></i> Current Portfolio Allocation</h2>
+            </div>
+            <div class="panel-body">
+                <div class="allocation-container">
+                    <canvas id="allocationChart"></canvas>
+                </div>
+                <div id="allocationTable" class="allocation-table"></div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="panel glass-panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-list"></i> Activity Log</h3>
+                <button id="clearLog" class="btn-icon">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                <div id="activityLog" class="activity-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">Success</div>
+            <div class="toast-message">Operation completed successfully</div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
