@@ -1,4 +1,4 @@
-# 🚀 RL Portfolio Trader - Web Edition
+# 🚀 RL Portfolio Trader 
 
 **AI-Powered Portfolio Management with Beautiful Real-Time Dashboard**
 
